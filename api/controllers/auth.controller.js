@@ -83,6 +83,24 @@ export const signUpUser = async (req, res, next) => {
 //! 2-Function To Sign In User:
 export const signInUser = async (req, res, next) => {
   try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return next(handleError(404, "Invalid credentials"));
+    }
+    if (user && (await user.comparePassword(password))) {
+      const { accessToken, refreshToken } = generateTokens(user._id);
+      await storeRefreshToken(user._id, refreshToken);
+      setCookies(res, accessToken, refreshToken);
+      res.json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      });
+    } else {
+      return next(handleError(401, "Invalid user data"));
+    }
   } catch (error) {
     console.log("Error While Sign In User", error.message);
     next(error);
