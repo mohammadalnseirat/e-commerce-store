@@ -110,6 +110,20 @@ export const signInUser = async (req, res, next) => {
 //! 3-Function To Log Out User:
 export const logOutUser = async (req, res, next) => {
   try {
+    //! delete refresh token from the redis:
+    const refreshToken = req.cookies.refresh_Token;
+    if (refreshToken) {
+      const decoded = jwt.verify(
+        refreshToken,
+        process.env.JWT_SECRET_KEY_TOKEN_REFRESH
+      );
+      await redis.del(`refresh_token:${decoded.userId}`);
+    }
+    res.clearCookie("access_Token");
+    res.clearCookie("refresh_Token");
+    res.status(200).json({
+      message: "User Logged Out Successfully",
+    });
   } catch (error) {
     console.log("Error While Log Out User", error.message);
     next(error);
