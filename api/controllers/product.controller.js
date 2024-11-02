@@ -1,5 +1,7 @@
 import { handleError } from "../utils/error.js";
 import Product from "../models/product.model.js";
+import { redis } from "../lib/redis.js";
+import cloudinary from "../lib/cloudinary.js";
 
 //! 1-Function To Get All Products:
 export const getAllProducts = async (req, res, next) => {
@@ -11,9 +13,61 @@ export const getAllProducts = async (req, res, next) => {
     next(error);
   }
 };
+
+//! 2- Function To Get Featured Products:(store in redis db)
+export const getFeaturedProducts = async (req, res, next) => {
+  try {
+    //* check if there is a product in the redis db:
+    let featuredProducts = await redis.get("featured_products");
+    if (featuredProducts) {
+      //* if yes, send the product from redis db:
+      res.status(200).json(JSON.parse(featuredProducts));
+    }
+
+    //* if no, get the products from the mongo db and store them in the redis db:
+    //? .lean() is gonna return a plain javascript object instead of a mongodb document
+    //? which is good for performance
+    featuredProducts = await Product.find({ isFeatured: true }).lean();
+    if (!featuredProducts) {
+      return next(handleError(404, "No featured products found"));
+    }
+    //* store the products in redis db:
+    await redis.set("featured_products", JSON.stringify(featuredProducts));
+    //* send the product to the client:
+    res.status(200).json(featuredProducts);
+  } catch (error) {
+    console.log("Error getting featured products", error.message);
+    next(error);
+  }
+};
 //! 3-Function To Create Product:
 export const createProduct = async (req, res, next) => {
   try {
+    const { name, description, price, category, image } = req.body;
+
+    if (!name || !description || !price || !category || !image) {
+      return next(handleError(401, "All fields are required"));
+    }
+    let cloudinaryResponse = null;
+    //* upload image to cloudinary:
+    if (image) {
+      cloudinaryResponse = await cloudinary.uploader.upload(image, {
+        folder: "products",
+      });
+    }
+    //* create a new product document:
+    const product = await Product.create({
+      name,
+      description,
+      price,
+      category,
+      image: cloudinaryResponse?.secure_url
+        ? cloudinaryResponse.secure_url
+        : "",
+    });
+
+    // ? send the response back:
+    res.status(201).json(product);
   } catch (error) {
     console.log("Error creating product", error.message);
     next(error);
