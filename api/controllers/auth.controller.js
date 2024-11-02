@@ -35,7 +35,7 @@ const setCookies = (res, accessToken, refreshToken) => {
     httpOnly: true, // prevent XSS attacks, cross site scripting attack
     sameSite: "strict", // prevent XSS attacks,  cross-site request forgery attack
     secure: process.env.NODE_ENV === "production",
-    maxAge: 7 * 24 * 60 * 60, // 7 days
+    maxAge: 7 * 24 * 60 * 60*1000, // 7 days
   });
 };
 //! 1-Function To Sign Up User:
@@ -129,3 +129,47 @@ export const logOutUser = async (req, res, next) => {
     next(error);
   }
 };
+
+//! 4-Function To Refresh Token:
+export const refreshToken = async (req, res, next) => {
+  try {
+    //*get the refrsh token:
+    const refreshToken = req.cookies.refresh_Token;
+    if (!refreshToken) {
+      return next(handleError(401, "No rfresh token provided"));
+    }
+    const decoded = jwt.verify(
+      refreshToken,
+      process.env.JWT_SECRET_KEY_TOKEN_REFRESH
+    );
+    // ?get the refresh token from the redis:
+    const storedTokenRefresh = await redis.get(
+      `refresh_token:${decoded.userId}`
+    );
+    if (storedTokenRefresh !== refreshToken) {
+      return next(handleError(401, "Invalid refresh token"));
+    }
+    //*generate new token:
+    const accessToken = jwt.sign(
+      { userId: decoded.userId },
+      process.env.JWT_SECRET_KEY_TOKEN,
+      {
+        expiresIn: "15m", // expires in 15 minutes
+      }
+    );
+    res.cookie("access_Token", accessToken, {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
+    res.status(200).json({ message: "Token Refreshed Successfully" });
+  } catch (error) {
+    console.log("Error while refreshing token", error.message);
+    next(error);
+  }
+};
+
+
+
+
