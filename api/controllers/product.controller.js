@@ -131,14 +131,43 @@ export const getRecommendedProducts = async (req, res, next) => {
 };
 
 //! 6- Function To get Product By Category:
-export const getProductsByCategory = async(req,res,next)=>{
+export const getProductsByCategory = async (req, res, next) => {
   const { category } = req.params;
   try {
-    const productsByCategory = await Product.find({ category})
-    res.status(200).json({productsByCategory})
+    const productsByCategory = await Product.find({ category });
+    res.status(200).json({ productsByCategory });
   } catch (error) {
-    console.log('Error getting products by category', error.message);
+    console.log("Error getting products by category", error.message);
     next(error);
-    
   }
-}
+};
+
+//! 7- Function To Toggle Featured Products:
+export const toggleFeaturedProduct = async (req, res, next) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (product) {
+      product.isFeatured = !product.isFeatured;
+      const updateProduct = await product.save();
+      // * update product in the redis:
+      await updateFeaturedProductCache();
+      res.status(200).json(updateProduct);
+    } else {
+      return next(handleError(404, "Product not found"));
+    }
+  } catch (error) {
+    console.log("Error toggling featured products", error.message);
+    next(error);
+  }
+};
+
+//? Function to update the featured products in redis cache:
+const updateFeaturedProductCache = async () => {
+  try {
+    // The lean() method  is used to return plain JavaScript objects instead of full Mongoose documents. This can significantly improve performance
+    const featuredProducts = await Product.find({ isFeatured: true }).lean();
+    await redis.set("featured_products", JSON.stringify(featuredProducts));
+  } catch (error) {
+    console.log("Error updating featured products cache", error.message);
+  }
+};
