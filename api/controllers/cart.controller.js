@@ -1,6 +1,27 @@
 import { handleError } from "../utils/error.js";
 import Product from "../models/product.model.js";
 
+// ! 4-Function To Get All Items From Cart:
+export const getProductsCart = async (req, res, next) => {
+  try {
+    const products = await Product.find({ _id: { $in: req.user.cartItems } });
+    // ?Add Quantity for each product:
+    const cartItems = products.map((product) => {
+      //!Find the item in the cartItems for the user and add the quantity to it:
+      const item = req.user.cartItems.find(
+        (cartItem) => cartItem.id === product.id
+      );
+      return {
+        ...product.toJSON(),
+        quantity: item.quantity,
+      };
+    });
+    res.status(200).json(cartItems);
+  } catch (error) {
+    console.log("Error getting products cart", error.message);
+    next(error);
+  }
+};
 //! 1- Function To Add Product To Cart:
 export const addProductToCart = async (req, res, next) => {
   try {
