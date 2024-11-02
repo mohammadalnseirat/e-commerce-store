@@ -23,3 +23,24 @@ export const addProductToCart = async (req, res, next) => {
     next(error);
   }
 };
+
+//! 2-Function To remove All Items From Cart:
+export const removeAllItemsFromCart = async (req, res, next) => {
+  try {
+    const { productId } = req.body;
+    const user = req.user;
+
+    if (!productId) {
+      user.cartItems = [];
+    } else {
+      // ?Remove all items from cart based on the productId:
+      user.cartItems = user.cartItems.filter((item) => item.id !== productId);
+    }
+    // ?save the user:
+    await user.save();
+    res.status(200).json(user.cartItems);
+  } catch (error) {
+    console.log("Error removing all items from cart", error.message);
+    next(error);
+  }
+};
