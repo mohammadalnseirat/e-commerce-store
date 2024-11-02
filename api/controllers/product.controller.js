@@ -77,9 +77,9 @@ export const createProduct = async (req, res, next) => {
 //! 4-Function To delete a product:
 export const deleteProduct = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    // const { id } = req.params;
     //* find the product by id:
-    const product = await Product.findById(id);
+    const product = await Product.findById(req.params.id);
     if (!product) {
       return next(handleError(404, "Product not found"));
     }
@@ -103,30 +103,41 @@ export const deleteProduct = async (req, res, next) => {
   }
 };
 
-
 //! 5-Function To get Recommendations Products:
-export const getRecommendedProducts = async(req,res,next)=>{
+export const getRecommendedProducts = async (req, res, next) => {
   try {
     const recommendedProducts = await Product.aggregate([
       {
-        $sample:{
-          size: 3 // get 3 random products
-        }
+        $sample: {
+          size: 4, // get 4 random products
+        },
       },
       {
-        $project:{
-          _id:1,
-          name:1,
-          description:1,
-          price:1,
-          image:1
-        }
-      }
-    ])
-// ? send the response back:
+        $project: {
+          _id: 1,
+          name: 1,
+          description: 1,
+          price: 1,
+          image: 1,
+        },
+      },
+    ]);
+    // ? send the response back:
     res.status(200).json(recommendedProducts);
   } catch (error) {
-    console.log('Error getting recommendations products', error.message);
+    console.log("Error getting recommendations products", error.message);
+    next(error);
+  }
+};
+
+//! 6- Function To get Product By Category:
+export const getProductsByCategory = async(req,res,next)=>{
+  const { category } = req.params;
+  try {
+    const productsByCategory = await Product.find({ category})
+    res.status(200).json({productsByCategory})
+  } catch (error) {
+    console.log('Error getting products by category', error.message);
     next(error);
     
   }
