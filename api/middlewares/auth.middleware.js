@@ -12,7 +12,8 @@ export const protectedRoute = async (req, res, next) => {
         handleError(401, "Unauthorized - Access token not provided.")
       );
     }
-    const decoded = jwt.verify(accessToken, process.env.JWT_SECRET_KEY_TOKEN);
+    try {
+      const decoded = jwt.verify(accessToken, process.env.JWT_SECRET_KEY_TOKEN);
     if (!decoded) {
       return next(handleError(403, "Unauthorized - Invalid access token."));
     }
@@ -23,6 +24,13 @@ export const protectedRoute = async (req, res, next) => {
     //! Send the authenticated user to the request:
     req.user = user;
     next();
+    } catch (error) {
+      if(error.name === 'TokenExpiredError'){
+        return next(handleError(401, "Unauthorized - Access token expired."));
+      }
+      throw error;
+      
+    }
   } catch (error) {
     console.log("Error while protected route", error.message);
     next();
