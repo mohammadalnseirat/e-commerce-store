@@ -35,7 +35,7 @@ const setCookies = (res, accessToken, refreshToken) => {
     httpOnly: true, // prevent XSS attacks, cross site scripting attack
     sameSite: "strict", // prevent XSS attacks,  cross-site request forgery attack
     secure: process.env.NODE_ENV === "production",
-    maxAge: 7 * 24 * 60 * 60*1000, // 7 days
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
 };
 //! 1-Function To Sign Up User:
@@ -170,6 +170,12 @@ export const refreshToken = async (req, res, next) => {
   }
 };
 
-
-
-
+//! 5-Function To get Profile the current User:
+export const getProfile = async (req, res, next) => {
+  try {
+    res.status(200).json(req.user);
+  } catch (error) {
+    console.log("Error while getting profile", error.message);
+    next(error);
+  }
+};
