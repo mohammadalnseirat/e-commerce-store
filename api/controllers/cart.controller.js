@@ -44,3 +44,33 @@ export const removeAllItemsFromCart = async (req, res, next) => {
     next(error);
   }
 };
+
+//! 3- Function To Update Quantity:
+export const updateQuantity = async (req, res, next) => {
+  try {
+    const { id: productId } = req.params;
+    const user = req.user;
+    const { quantity } = req.body;
+    // ?Find the existing Item in the Cart:
+    const existingItem = user.cartItems.find((item) => item.id === productId);
+    if (existingItem) {
+      // ?check the quantity is equal to zero:
+      if (quantity === 0) {
+        // ?Filter out the item:
+        user.cartItems = user.cartItems.filter((item) => item.id !== productId);
+        await user.save();
+        res.status(200).json(user.cartItems);
+      }
+
+      // *Update the quantity of the existing item:
+      existingItem.quantity = quantity;
+      await user.save();
+      res.status(200).json(user.cartItems);
+    } else {
+      return next(handleError(404, "Product not found in the cart"));
+    }
+  } catch (error) {
+    console.log("Error updating quantity", error.message);
+    next(error);
+  }
+};
