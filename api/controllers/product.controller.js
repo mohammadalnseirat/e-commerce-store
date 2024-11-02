@@ -102,3 +102,32 @@ export const deleteProduct = async (req, res, next) => {
     next(error);
   }
 };
+
+
+//! 5-Function To get Recommendations Products:
+export const getRecommendedProducts = async(req,res,next)=>{
+  try {
+    const recommendedProducts = await Product.aggregate([
+      {
+        $sample:{
+          size: 3 // get 3 random products
+        }
+      },
+      {
+        $project:{
+          _id:1,
+          name:1,
+          description:1,
+          price:1,
+          image:1
+        }
+      }
+    ])
+// ? send the response back:
+    res.status(200).json(recommendedProducts);
+  } catch (error) {
+    console.log('Error getting recommendations products', error.message);
+    next(error);
+    
+  }
+}
