@@ -32,7 +32,7 @@ export const getAnalyticsData = async () => {
 };
 
 //! Function To get the data for charting purposes:
-export const getDailySalesData = async (startDate, endDate) => {
+export const getSalesDataDaily = async (startDate, endDate) => {
 	try {
 		const dailySalesData = await Order.aggregate([
 			{
