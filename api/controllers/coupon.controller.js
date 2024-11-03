@@ -4,6 +4,7 @@ import Coupon from "../models/coupon.model.js";
 //! 1-Function To get Coupon:
 export const getCoupon = async (req, res, next) => {
   try {
+    // ?Find the coupon for the user:
     const coupon = await Coupon.findOne({
       userId: req.user._id,
       isActive: true,
@@ -32,7 +33,7 @@ export const validateCoupon = async (req, res, next) => {
       return next(handleError(404, "Coupon not found"));
     }
     //! Check The Expiration Date:
-    if (coupon.expirationDate < Date.now()) {
+    if (coupon.expirationDate < new Date()) {
       coupon.isActive = false;
       await coupon.save();
       return next(handleError(404, "Coupon expired"));
