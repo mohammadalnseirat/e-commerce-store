@@ -119,3 +119,51 @@ const createNewCoupon = async (userId) => {
   await newCoupon.save();
   return newCoupon;
 };
+
+//! 2-Function To create Checkout Success:
+export const createCheckoutSuccess = async(req,res,next)=>{
+  try {
+    const {sessionId} = req.body
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    //!Check the status of payment:
+    if(session.payment_status === 'paid'){
+      // ?check the coupon from metadata and update:
+      if(session.metadata.couponCode){
+        await Coupon.findOneAndUpdate({
+          code: session.metadata.couponCode,
+          userId: session.metadata.userId
+
+        },{
+          isActive: false
+        })
+      }
+
+      // ?Create a new Order:
+      const products = JSON.parse(session.metadata.products)
+      const newOrder = new Order({
+        user:session.metadata.userId,
+        products: products.map((product)=>({
+          product:product.id,
+          quantity:product.quantity,
+          price:product.price
+
+        })),
+        totalAmount: session.amount_total / 100,
+        stripeSessionId: sessionId
+
+      })
+      // ?Save the new Order:
+      await newOrder.save()
+      // ?send the response:
+      res.status(200).json({
+        message: 'Purchase Successful',
+        success: true,
+        orderId : newOrder._id
+      })
+    }
+  } catch (error) {
+    console.log('Error creating Checkout Success',error.message)
+    next(error)
+  }
+}
