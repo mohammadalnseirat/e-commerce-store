@@ -7,7 +7,7 @@ export const useUserStore = create((set, get) => ({
   loading: false,
   checkingAuth: true,
 
-  // ?Function To Sign up:
+  // ?1-Function To Sign up:
   signUp: async ({ name, email, password, confirmpassword }) => {
     set({ loading: true });
     //check the password:
@@ -34,7 +34,7 @@ export const useUserStore = create((set, get) => ({
     }
   },
 
-  // ?Function To Sign in:
+  // ?2-Function To Sign in:
   signIn: async (email, password) => {
     set({ loading: true });
 
@@ -51,4 +51,31 @@ export const useUserStore = create((set, get) => ({
       set({ loading: false });
     }
   },
+
+  // ?3- Function To Log Out:
+  logOut: async () => {
+    set({ loading: true });
+    try {
+      await axiosInstance.post("/v1/auth/log-out");
+      set({ loading: false, user: null });
+      toast.success("User logged out successfully!");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Something went wrong!");
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  // ?4-Function To Check Authentication:
+  checkAuth: async () => {
+    set({ checkingAuth: true });
+    try {
+      const res = await axiosInstance.get("/v1/auth/profile");
+      set({ user: res.data, checkingAuth: false });
+    } catch (error) {
+      set({ user: null, checkingAuth: false });
+      toast.error(error.response.data.message || "User not authenticated!");
+    }
+  },
+  // Todo: Function To Implemnet axios instance to refresh token:
 }));

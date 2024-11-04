@@ -6,11 +6,13 @@ import {
   LogIn,
   LogOut,
   Home,
+  Loader,
 } from "lucide-react";
+import { useUserStore } from "../stores/useUserStore";
 
 const Navbar = () => {
-  const user = true;
-  const isAdmin = true;
+  const { user, logOut, loading } = useUserStore();
+  const isAdmin = user?.role === "admin";
   return (
     <header className="fixed top-0 left-0 bg-gray-900 bg-opacity-80 w-full backdrop-blur-md shadow-lg z-40 transition-all duration-300 border-b border-b-emerald-500 ">
       <div className="container mx-auto px-4 py-3">
@@ -53,9 +55,25 @@ const Navbar = () => {
               </Link>
             )}
             {user ? (
-              <button className="flex items-center py-2 px-4 rounded-md text-gray-100 bg-red-600 hover:bg-red-800 transition-all duration-200 ease-in-out">
-                <LogOut className="inline-block mr-2" size={20} />
-                <span className="hidden sm:inline font-medium">Logout</span>
+              <button
+                className="flex items-center py-2 px-4 rounded-md text-gray-100 bg-red-600 hover:bg-red-800 transition-all duration-200 ease-in-out"
+                onClick={logOut}
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader
+                      className="mr-2 w-5 h-5 animate-spin"
+                      aria-hidden="true"
+                    />
+                    <span className="ml-2">Logging Out...</span>
+                  </>
+                ) : (
+                  <>
+                    <LogOut className="inline-block mr-2" size={20} />
+                    <span className="hidden sm:inline font-medium">Logout</span>
+                  </>
+                )}
               </button>
             ) : (
               <>
