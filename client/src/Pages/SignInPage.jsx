@@ -1,10 +1,19 @@
-import React from 'react'
-import {motion} from 'framer-motion'
-import { ArrowRight, Loader, Lock, LogIn,Mail } from 'lucide-react'
-import { Link } from 'react-router-dom';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { ArrowRight, Loader, Lock, LogIn, Mail } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useUserStore } from "../stores/useUserStore";
 
 const SignInPage = () => {
-  const loading = !true;
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const { loading, signIn } = useUserStore();
+
+  //! handle Submit Data:
+  const handleSubmitData = (e) => {
+    e.preventDefault();
+    signIn(email, password);
+  };
   return (
     <div className="flex flex-col items-center justify-center py-12 sm:py-8 sm:px-6 lg:px-8">
       {/* Motion for header start here */}
@@ -15,7 +24,7 @@ const SignInPage = () => {
         transition={{ duration: 0.8 }}
       >
         <h2 className="text-2xl sm:text-4xl text-center mt-5 font-bold font-mono text-emerald-500">
-          Log In 
+          Log In
         </h2>
       </motion.div>
       {/* Motion for header end here */}
@@ -27,8 +36,7 @@ const SignInPage = () => {
         transition={{ duration: 0.8, delay: 0.2 }}
       >
         <div className="bg-gray-800 border border-emerald-700 shadow-md px-4 py-8 rounded sm:rounded-lg sm:px-10">
-          <form className="space-y-6">
-            
+          <form className="space-y-6" onSubmit={handleSubmitData}>
             <div>
               <label
                 htmlFor="email"
@@ -43,6 +51,8 @@ const SignInPage = () => {
                 <input
                   type="email"
                   id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email..."
                   className="block bg-gray-900 w-full px-3 py-2 border border-emerald-800 rounded-md shadow-sm pl-10 placeholder-emerald-700 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
                 />
@@ -62,6 +72,8 @@ const SignInPage = () => {
                 <input
                   type="password"
                   id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password..."
                   className="block w-full bg-gray-900 px-3 py-2 border border-emerald-800 rounded-md shadow-sm placeholder-emerald-700 pl-10 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
                 />
@@ -102,7 +114,7 @@ const SignInPage = () => {
       </motion.div>
       {/* Motion for form end here */}
     </div>
-  )
-}
+  );
+};
 
-export default SignInPage 
+export default SignInPage;

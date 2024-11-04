@@ -25,10 +25,29 @@ export const useUserStore = create((set, get) => ({
         password,
       });
       set({ user: res.data, loading: false });
+      toast.success("User signed up successfully!");
     } catch (error) {
       set({ loading: false });
       toast.error(error.response.data.message || "Something went wrong!");
-    }finally{
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  // ?Function To Sign in:
+  signIn: async (email, password) => {
+    set({ loading: true });
+
+    try {
+      const res = await axiosInstance.post("/v1/auth/sign-in", {
+        email,
+        password,
+      });
+      set({ loading: false, user: res.data });
+      toast.success("User signed in successfully!");
+    } catch (error) {
+      toast.error(error.response.data.message || "Something went wrong!");
+    } finally {
       set({ loading: false });
     }
   },
