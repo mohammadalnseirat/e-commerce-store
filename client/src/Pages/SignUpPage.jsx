@@ -2,9 +2,26 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Loader, Lock, Mail, User, UserPlus } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useUserStore } from "../stores/useUserStore";
 
 const SignUpPage = () => {
-  const loading = !true;
+  const [formData, setFormData] = useState({});
+  // *handle change Inputs:
+  const handleChangeInputs = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  //! hook for signup:
+  const {loading,signUp} = useUserStore()
+
+  // ?handle submit:
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // console.log(formData, "formData"); 
+    signUp(formData)
+    // * clear form after submit:
+    setFormData({});
+  };
   return (
     <div className="flex flex-col items-center justify-center py-6 sm:py-8 sm:px-6 lg:px-8">
       {/* Motion for header start here */}
@@ -27,7 +44,7 @@ const SignUpPage = () => {
         transition={{ duration: 0.8, delay: 0.2 }}
       >
         <div className="bg-gray-800 border border-emerald-700 shadow-md px-4 py-8 rounded sm:rounded-lg sm:px-10">
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label
                 htmlFor="name"
@@ -43,6 +60,8 @@ const SignUpPage = () => {
                   type="text"
                   id="name"
                   placeholder="Enter your name..."
+                  // value={formData.name}
+                  onChange={handleChangeInputs}
                   className="block bg-gray-900 w-full px-3 py-2 border border-emerald-800 rounded-md shadow-sm placeholder-emerald-700 pl-10 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm  "
                 />
               </div>
@@ -61,6 +80,7 @@ const SignUpPage = () => {
                 <input
                   type="email"
                   id="email"
+                  onChange={handleChangeInputs}
                   placeholder="Enter your email..."
                   className="block bg-gray-900 w-full px-3 py-2 border border-emerald-800 rounded-md shadow-sm pl-10 placeholder-emerald-700 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
                 />
@@ -81,6 +101,7 @@ const SignUpPage = () => {
                   type="password"
                   id="password"
                   placeholder="Enter your password..."
+                  onChange={handleChangeInputs}
                   className="block w-full bg-gray-900 px-3 py-2 border border-emerald-800 rounded-md shadow-sm placeholder-emerald-700 pl-10 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
                 />
               </div>
@@ -98,8 +119,9 @@ const SignUpPage = () => {
                 </div>
                 <input
                   type="password"
-                  id="password"
+                  id="confirmpassword"
                   placeholder="Confirm your password..."
+                  onChange={handleChangeInputs}
                   className="block w-full bg-gray-900 px-3 py-2 border border-emerald-800 rounded-md shadow-sm placeholder-emerald-700 pl-10 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm"
                 />
               </div>
