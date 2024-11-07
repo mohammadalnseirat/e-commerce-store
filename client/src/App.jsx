@@ -44,7 +44,12 @@ const App = () => {
             path="/sign-in"
             element={!user ? <SignInPage /> : <Navigate to={"/"} />}
           />
-          <Route path="/secret-dashboard" element={<AdminPage />} />
+          <Route
+            path="/secret-dashboard"
+            element={
+              user?.role === "admin" ? <AdminPage /> : <Navigate to={"/"} />
+            }
+          />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/category/:category" element={<CategoryPage />} />
           <Route path="/purchase-success" element={<PurchaseSucessPage />} />
